@@ -1,0 +1,24 @@
+name: check
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: check
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python bot.py once
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          YT_CHANNEL: UCFQ0_BKuNwSkKfLEXw1K8pw
+          GROUP: "@engicommunity"
+      - if: always()  # remember which videos were posted
+        run: |
+          git config user.name "engikode-bot"
+          git config user.email "engikode-bot@users.noreply.github.com"
+          git add seen.json
+          git diff --cached --quiet || (git commit -m "update seen videos" && git push)
